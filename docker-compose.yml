@@ -1,0 +1,72 @@
+version : '3'
+services :
+
+  mysql :
+    image: mysql:5.7
+    ports :
+      - "3306:3306"
+    volumes :
+      - ./mysql/conf.d/charset.cnf:/etc/mysql/conf.d/charset.cnf
+      - mysql-data:/var/lib/mysql
+    environment :
+      - MYSQL_ROOT_PASSWORD=123456
+    container_name : mysql
+    restart : always
+    networks:
+      - lnmp-net
+  redis :
+    image: redis:3.2
+    ports :
+      - "6379:6379"
+    volumes :
+      - redis-data:/data
+      - ./redis/conf/redis.conf:/usr/local/etc/redis/redis.conf:ro
+    container_name : redis
+    restart : always
+    networks:
+      - lnmp-net
+  memcached :
+    image: memcached:1.5
+    ports :
+      - "11211:11211"
+    container_name : memcached
+    restart : always
+    networks:
+      - lnmp-net
+    command:
+      ["memcached","-m 64"]
+  php5.6 :
+    build :
+      context : ./php5
+      dockerfile : Dockerfile
+    image: php-fpm:5.6
+    ports :
+      - "9000:9000"
+    volumes :
+      - ./app:/app
+      - ./php5/conf/php.ini:/usr/local/php5/etc/php.ini:ro
+    container_name : php-fpm
+    restart : always
+    networks:
+      - lnmp-net
+  nginx : 
+    image: nginx:1.13
+    ports :
+      - "80:80"
+      - "433:433"
+    volumes :
+      - ./app:/app
+      - ./nginx/conf/nginx.conf:/etc/nginx/nginx.conf:ro
+    container_name : nginx
+    restart : always
+    networks:
+      - lnmp-net
+
+
+
+networks:
+  lnmp-net:
+
+volumes:
+  mysql-data: 
+  redis-data: 
