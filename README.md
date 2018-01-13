@@ -51,5 +51,4 @@ curl  ip/test.php
 清理集群
 ```
 docker-compose  down
-docker-compose  rm
 ```
