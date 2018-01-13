@@ -44,7 +44,7 @@ services :
       - "9000:9000"
     volumes :
       - ./app:/app
-      - ./php5/conf/php.ini:/usr/local/php5/etc/php.ini:ro
+      - ./php5/conf/php.ini:/usr/local/php/etc/php.ini:ro
     container_name : php-fpm
     restart : always
     networks:
