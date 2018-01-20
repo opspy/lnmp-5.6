@@ -35,11 +35,11 @@ services :
       - lnmp-net
     command:
       ["memcached","-m 64"]
-  php5.6 :
+  php-fpm :
     build :
       context : ./php5
       dockerfile : Dockerfile
-    image: php-fpm:5.6
+    image: php-fpm:5.3
     ports :
       - "9000:9000"
     volumes :
