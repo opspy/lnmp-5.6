@@ -4,24 +4,27 @@ FROM centos:7.4.1708
 ENV  PHP_BUILD_DEPS \
        gcc openssl-devel libxml2-devel libjpeg-devel autoconf \
        libpng-devel freetype-devel libicu-devel gcc-c++ re2c openldap-devel \
-       libmcrypt-devel libxslt-devel libcurl-devel make libmcrypt
+       libmcrypt-devel libxslt-devel libcurl-devel make libmcrypt file bison libmemcached-devel
+
+ENV  PHP_VER 7.2.1
+
 ADD entrypoint.sh /usr/local/bin
 RUN yum -y update \
     && yum -y install epel-release \
     && yum -y install wget $PHP_BUILD_DEPS \
     && yum clean all \
     && mkdir /app && cd /app \
-    && wget http://cn.php.net/distributions/php-5.6.33.tar.gz \
-    && tar xf php-5.6.33.tar.gz \
-    && rm php-5.6.33.tar.gz -f \
-    && cd php-5.6.33 \
+    && wget http://hk1.php.net/distributions/php-${PHP_VER}.tar.gz \
+    && tar xf php-${PHP_VER}.tar.gz \
+    && rm php-${PHP_VER}.tar.gz -f \
+    && cd php-${PHP_VER} \
     && ./configure --prefix=/usr/local/php \
         --with-config-file-path=/usr/local/php/etc \
         --with-config-file-scan-dir=/usr/local/php/conf.d \
         --with-fpm-user=www \
         --with-fpm-group=www \
         --enable-fpm  \
-        --with-mysql=mysqlnd \
+        --enable-mysqlnd \
         --with-mysqli=mysqlnd \
         --with-pdo-mysql=mysqlnd \
         --with-iconv-dir \
@@ -38,26 +41,24 @@ RUN yum -y update \
         --enable-inline-optimization \
         --enable-mbregex \
         --enable-mbstring \
-        --with-mcrypt \
+        --enable-intl \
         --enable-ftp \
         --with-gd \
-        --enable-gd-native-ttf \
         --with-curl \
         --with-openssl \
         --with-mhash \
         --enable-pcntl \
         --enable-sockets \
         --with-xmlrpc \
-        --enable-zip \
+        --with-libzip \
         --enable-soap \
         --with-gettext \
         --disable-fileinfo \
         --enable-opcache \
-        --enable-intl \
         --with-xsl \
     && make -j "$(nproc)" \
     && make install \
-    && rm -rf /app/php-5.6.33/
+    && rm -rf /app/php-${PHP_VER}/
 
 RUN  ln -sf /usr/local/php/bin/php /usr/local/bin/php \
      && ln -sf /usr/local/php/bin/phpize /usr/local/bin/phpize \
@@ -66,9 +67,11 @@ RUN  ln -sf /usr/local/php/bin/php /usr/local/bin/php \
      && ln -sf /usr/local/php/sbin/php-fpm /usr/local/bin/php-fpm \
      && wget -O /usr/local/bin/composer https://getcomposer.org/composer.phar \
      && chmod +x /usr/local/bin/composer \
+     && pecl channel-update pecl.php.net \
      && pecl install igbinary \
+     && pecl install msgpack \
      && echo "y"|pecl install redis \
-     && echo "y"|pecl install memcache 
+     && echo $(pkg-config libmemcached --variable=prefix) | pecl install memcached
 
 
 RUN  useradd www \
@@ -98,7 +101,7 @@ RUN  useradd www \
 	}|tee /usr/local/php/conf.d/opcache-recommended.ini \
      && { \
            echo 'extension=igbinary.so'; \
-           echo 'extension=memcache.so'; \
+           echo 'extension=memcached.so'; \
            echo 'extension=redis.so'; \
         }|tee /usr/local/php/conf.d/extension.ini
            
