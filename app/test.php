@@ -1,6 +1,7 @@
 <?php 
-   $link=mysql_connect("mysql","root","123456"); 
-   if(!$link) echo "MYSQL FAILD!连接错误，用户名密码不对"; 
+   $mysql = new mysqli();
+   $mysql->connect('mysql','root','123456');
+   if(!$mysql) echo "MYSQL FAILD!连接错误，用户名密码不对"; 
    else echo "MYSQL OK!可以连接 <br/>"; 
 
    $redis = new Redis();    
@@ -8,8 +9,8 @@
    $redis->set("key1","Hello redis!");    
    echo $redis->get("key1")."<br/>";
    
-   $mem = new Memcache();
+   $mem = new Memcached();
    $mem->addServer("memcached",11211);
-   $mem->add("mystr","hello memcached!",MEMCACHE_COMPRESSED,0); 
+   $mem->set("mystr","hello memcached!",0); 
    echo $mem->get("mystr")."<br/>";
 ?> 
